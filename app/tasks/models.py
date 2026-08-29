@@ -10,7 +10,7 @@ class Task_models(Base):
     description = Column(Text(500), nullable=True)
     is_completed = Column(Boolean, default=False)
 
-    create_data = Column(DATETIME, server_default=func.now())
-    updated_data = Column(
+    create_date = Column(DATETIME, server_default=func.now())
+    update_date = Column(
         DATETIME, server_default=func.now(), server_onupdate=func.now()
     )

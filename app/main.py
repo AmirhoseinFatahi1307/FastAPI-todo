@@ -4,7 +4,7 @@ from tasks.routes import router
 
 
 @asynccontextmanager
-async def lifespan(app=FastAPI):
+async def lifespan(app: FastAPI):
     print("Application startup")
     yield
     print("Application shutdown")
