@@ -25,7 +25,6 @@ class User_Model(Base):
         return pwd_context.hash(plain_password)
 
     def verify_password(self, plain_password: str) -> bool:
-        """Check whether a plain-text password matches the stored hash."""
         return pwd_context.verify(plain_password, self.password)
 
     def set_password(self, plain_text: str) -> None:
