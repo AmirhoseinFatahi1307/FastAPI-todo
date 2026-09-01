@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from tasks.routes import router
+from tasks.routes import router as task_routers
+from users.routes import router as users_routers
 
 
 @asynccontextmanager
@@ -27,4 +28,5 @@ app = FastAPI(
     openapi_tags=metadata_tags,
 )
 
-app.include_router(router)
+app.include_router(task_routers)
+app.include_router(users_routers)

@@ -21,10 +21,12 @@ class User_Model(Base):
 
     tasks = relationship("Task_models", back_populates="user")
 
-    def set_password(self, plain_password: str) -> None:
-        """Hash the given plain-text password and store it."""
-        self.password = pwd_context.hash(plain_password)
+    def hash_password(self, plain_password: str) -> str:
+        return pwd_context.hash(plain_password)
 
     def verify_password(self, plain_password: str) -> bool:
         """Check whether a plain-text password matches the stored hash."""
         return pwd_context.verify(plain_password, self.password)
+
+    def set_password(self, plain_text: str) -> None:
+        self.password = self.hash_password(plain_text)
