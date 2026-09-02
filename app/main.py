@@ -1,7 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from contextlib import asynccontextmanager
 from tasks.routes import router as task_routers
 from users.routes import router as users_routers
+from auth.basic_auth import get_authenticated_user
+from users.models import User_Model
 
 
 @asynccontextmanager
@@ -30,3 +32,9 @@ app = FastAPI(
 
 app.include_router(task_routers)
 app.include_router(users_routers)
+
+
+@app.get("/private")
+async def private_route(user: User_Model = Depends(get_authenticated_user)):
+    print(user)
+    return {"massage": "This is a private route."}
