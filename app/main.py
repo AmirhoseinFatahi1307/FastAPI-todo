@@ -31,12 +31,10 @@ app = FastAPI(
 app.include_router(task_routers)
 app.include_router(users_routers)
 
-from fastapi.security import APIKeyHeader
-
-header_schema = APIKeyHeader(name="X-key")
+from auth.token_auth import get_authenticated_user
 
 
 @app.get("/private")
-async def private_route(api_key=Depends(header_schema)):
-    print(api_key)
+async def private_route(user=Depends(get_authenticated_user)):
+    print(user)
     return {"massage": "This is a private route."}
