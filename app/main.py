@@ -31,7 +31,7 @@ app = FastAPI(
 app.include_router(task_routers)
 app.include_router(users_routers)
 
-from auth.token_auth import get_authenticated_user
+from auth.jwt_auth import get_authenticated_user
 
 
 @app.get("/private")
