@@ -2,9 +2,11 @@ from fastapi import APIRouter, Path, Depends, HTTPException, Body, Query, status
 from fastapi.responses import JSONResponse
 from tasks.schemas import *
 from tasks.models import Task_models
+from users.models import User_Model
 from sqlalchemy.orm import Session
 from core.database import get_db
 from typing import List
+from auth.jwt_auth import get_authenticated_user
 
 router = APIRouter(tags=["Tasks"], prefix="/Todo")
 
@@ -21,8 +23,9 @@ async def retrieve_task_list(
         default=0, ge=0, description="Number of items to skip before returning results"
     ),
     db: Session = Depends(get_db),
+    user: User_Model = Depends(get_authenticated_user),
 ):
-    query = db.query(Task_models)
+    query = db.query(Task_models).filter_by(user_id=user.id)
     if completed is not None:
         query = query.filter_by(is_completed=completed)
     return query.limit(limit).offset(offset).all()
@@ -36,8 +39,9 @@ async def retrieve_task_detail(
         gt=0,
     ),
     db: Session = Depends(get_db),
+    user: User_Model = Depends(get_authenticated_user),
 ):
-    query = db.query(Task_models).filter_by(id=task_id).first()
+    query = db.query(Task_models).filter_by(user_id=user.id, id=task_id).first()
     if not query:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Task not found"
@@ -51,8 +55,11 @@ async def retrieve_task_detail(
 async def create_task(
     request: TaskCreateSchema,
     db: Session = Depends(get_db),
+    user: User_Model = Depends(get_authenticated_user),
 ):
-    task_obj = Task_models(**request.model_dump())
+    data = request.model_dump()
+    data.update({"user_id": user.id})
+    task_obj = Task_models(**data)
     db.add(task_obj)
     db.commit()
     db.refresh(task_obj)
@@ -70,8 +77,9 @@ async def updating_task_detail(
         gt=0,
     ),
     db: Session = Depends(get_db),
+    user: User_Model = Depends(get_authenticated_user),
 ):
-    task = db.query(Task_models).filter_by(id=task_id).first()
+    task = db.query(Task_models).filter_by(user_id=user.id, id=task_id).first()
     if not task:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Task not found"
@@ -85,12 +93,16 @@ async def updating_task_detail(
 
 
 @router.delete("/Tasks/{task_id}")
-async def deleting_task(task_id: int = Path(..., gt=0), db: Session = Depends(get_db)):
-    task = db.query(Task_models).filter_by(id=task_id).one_or_none()
+async def deleting_task(
+    task_id: int = Path(..., gt=0),
+    db: Session = Depends(get_db),
+    user: User_Model = Depends(get_authenticated_user),
+):
+    task = db.query(Task_models).filter_by(user_id=user.id, id=task_id).one_or_none()
     if task:
         db.delete(task)
         db.commit()
-        return JSONResponse(content={"Detai": "Task removed succssesfully"})
+        return JSONResponse(content={"Detail": "Task removed successfully"})
     else:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Task not found"
