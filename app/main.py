@@ -1,7 +1,8 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Response, Request
 from contextlib import asynccontextmanager
 from tasks.routes import router as task_routers
 from users.routes import router as users_routers
+from auth.jwt_auth import get_authenticated_user
 
 
 @asynccontextmanager
@@ -31,10 +32,20 @@ app = FastAPI(
 app.include_router(task_routers)
 app.include_router(users_routers)
 
-from auth.jwt_auth import get_authenticated_user
-
 
 @app.get("/private")
 async def private_route(user=Depends(get_authenticated_user)):
     print(user)
     return {"massage": "This is a private route."}
+
+
+@app.post("/set-cookie")
+async def set_cookie(response: Response):
+    response.set_cookie(key="test", value="something")
+    return {"massage": "Cookie has been set successfully"}
+
+
+@app.post("/set-cookie")
+async def set_cookie(request: Request):
+    print(request.cookies)
+    return {"massage": "Cookie has been set successfully"}
