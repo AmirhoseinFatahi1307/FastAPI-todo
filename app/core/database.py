@@ -9,7 +9,7 @@ engine = create_engine(
     settings.SQLALCHEMY_DATABASE_URL,
     connect_args={"check_same_thread": False},  # only for sqlite
 )
-Sessionlocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 # create base class for declaring tables
@@ -17,7 +17,7 @@ Base = declarative_base()
 
 
 def get_db():
-    db = Sessionlocal()
+    db = SessionLocal()
     try:
         yield db
     finally:
