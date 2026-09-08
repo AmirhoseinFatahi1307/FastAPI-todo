@@ -4,6 +4,7 @@ from tasks.routes import router as task_routers
 from users.routes import router as users_routers
 from auth.jwt_auth import get_authenticated_user
 from fastapi.middleware.cors import CORSMiddleware
+import time
 
 
 @asynccontextmanager
@@ -34,7 +35,16 @@ app.include_router(task_routers)
 app.include_router(users_routers)
 
 
-origins = [["*"]]
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    start_time = time.perf_counter()
+    response = await call_next(request)
+    process_time = time.perf_counter() - start_time
+    response.headers["X-Process-Time"] = str(process_time)
+    return response
+
+
+origins = ["http://127.0.0.1:5500"]
 
 
 app.add_middleware(
