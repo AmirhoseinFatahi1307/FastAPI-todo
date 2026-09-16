@@ -1,8 +1,10 @@
-from fastapi import FastAPI, Depends, Response, Request
+from fastapi import FastAPI, Request, HTTPException, status
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 from tasks.routes import router as task_routers
 from users.routes import router as users_routers
-from auth.jwt_auth import get_authenticated_user
 from fastapi.middleware.cors import CORSMiddleware
 import time
 
@@ -54,3 +56,25 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    error_response = {
+        "error": True,
+        "status_code": exc.status_code,
+        "message": str(exc.detail),
+    }
+    return JSONResponse(status_code=exc.status_code, content=error_response)
+
+
+@app.exception_handler(RequestValidationError)
+async def http_validation_exception_handler(request, exc):
+    error_response = {
+        "error": True,
+        "status_code": status.HTTP_422_UNPROCESSABLE_ENTITY,
+        "message": exc.errors(),
+    }
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, content=error_response
+    )
