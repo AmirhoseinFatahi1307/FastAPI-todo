@@ -27,12 +27,13 @@ async def user_login(
     user_obj = db.query(User_Model).filter_by(username=request.username.lower()).first()
     if not user_obj:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password",
         )
     if not user_obj.verify_password(request.password):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="password is invalid"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password",
         )
 
     # Token base authentication
@@ -64,7 +65,10 @@ async def user_register(
     user_obj.set_password(request.password)
     db.add(user_obj)
     db.commit()
-    return JSONResponse(content={"detail": "User registered successfully"})
+    return JSONResponse(
+        status_code=status.HTTP_201_CREATED,
+        content={"detail": "User registered successfully"},
+    )
 
 
 @router.post("/refresh_token")
